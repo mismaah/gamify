@@ -13,7 +13,6 @@ const prisma =
 
 // Audit middleware
 prisma.$use(async (params, next) => {
-  console.log("MIDDLEWARED!!!!!");
   const result = await next(params);
   if (
     params.model !== "Audit" &&
