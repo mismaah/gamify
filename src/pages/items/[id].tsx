@@ -24,8 +24,10 @@ const Item: NextPage<{ id: number }> = ({ id }) => {
   };
 
   useEffect(() => {
-    updateNumbers();
-  }, []);
+    if (getItem?.data) {
+      updateNumbers();
+    }
+  }, [getItem?.data]);
 
   useEffect(() => {
     if (getItem?.data) {
