@@ -55,7 +55,10 @@ export const countAccumulated = (rates?: Rate[]): [number, number | null] => {
     }
     const seconds = to.diff(from, "seconds");
     total += ratePerSec * seconds;
-    if (!rate.to) {
+    if (
+      !rate.to ||
+      (isSameOrAfter(dayjs(), from) && isSameOrBefore(dayjs(), to))
+    ) {
       currentRate = ratePerSec;
     }
   }
