@@ -67,4 +67,4 @@ ENV PORT 3000
 COPY prisma ./
 COPY startup.sh ./
 
-ENTRYPOINT  ["/app/startup.sh"]
+ENTRYPOINT  ["sh", "/app/startup.sh"]
