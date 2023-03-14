@@ -25,7 +25,7 @@ export const Usage: React.FC<UsageProps> = ({ item }) => {
   });
 
   return (
-    <div className="flex min-w-[400px] flex-col gap-2">
+    <div className="flex min-w-[300px] flex-col gap-2">
       {item && <AddUse itemId={item.id} />}
       <Table
         rowKey="id"

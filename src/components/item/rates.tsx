@@ -25,7 +25,7 @@ export const Rates: React.FC<RatesProps> = ({ item }) => {
   });
 
   return (
-    <div className="flex min-w-[400px] flex-col gap-2">
+    <div className="flex min-w-[300px] flex-col gap-2">
       {item && <AddRate itemId={item.id} />}
       <Table
         rowKey="id"
