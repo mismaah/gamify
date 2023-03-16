@@ -91,6 +91,7 @@ export const AddUse: React.FC<AddUseProps> = ({ itemId, use }) => {
             <DatePicker
               format={DATETIME_FORMATS.dateAndTime}
               className="w-full"
+              showTime={{ format: "HH:mm" }}
             />
           </Form.Item>
         </Form>
