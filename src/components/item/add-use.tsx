@@ -1,9 +1,10 @@
 import { Use } from "@prisma/client";
-import { Modal, Button, DatePicker, Form, message } from "antd";
+import { Modal, Button, DatePicker, Form, message, Tooltip } from "antd";
 import React, { useState } from "react";
 import { api } from "~/utils/api";
 import dayjs, { Dayjs } from "dayjs";
 import { DATETIME_FORMATS } from "../../utils/helpers";
+import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
 
 export interface AddUseProps {
   itemId: number;
@@ -12,7 +13,11 @@ export interface AddUseProps {
 
 export const AddUse: React.FC<AddUseProps> = ({ itemId, use }) => {
   let title = "Add Use";
-  if (use) title = "Edit";
+  let icon = <PlusCircleOutlined />;
+  if (use) {
+    title = "Edit";
+    icon = <EditOutlined />;
+  }
   const [visible, setVisible] = useState(false);
 
   const [form] = Form.useForm();
@@ -36,18 +41,19 @@ export const AddUse: React.FC<AddUseProps> = ({ itemId, use }) => {
 
   return (
     <div>
-      <Button
-        loading={mutation.isLoading}
-        onClick={() =>
-          use
-            ? setVisible(true)
-            : mutation.mutate({ id: null, itemId, createdAt: null })
-        }
-        type={use ? "default" : "primary"}
-        size={use ? "small" : "middle"}
-      >
-        {title}
-      </Button>
+      <Tooltip title={title}>
+        <Button
+          loading={mutation.isLoading}
+          onClick={() =>
+            use
+              ? setVisible(true)
+              : mutation.mutate({ id: null, itemId, createdAt: null })
+          }
+          type="link"
+          size={use ? "small" : "middle"}
+          icon={icon}
+        />
+      </Tooltip>
       <Modal
         open={visible}
         title={title}

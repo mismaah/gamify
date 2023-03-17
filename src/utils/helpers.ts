@@ -3,8 +3,9 @@ import dayjs from "dayjs";
 import type { Dayjs } from "dayjs";
 
 export const DATETIME_FORMATS = {
-  date: "DD-MMM-YYYY",
-  dateAndTime: "DD-MMM-YYYY HH:mm",
+  date: "YYYY-MM-DD",
+  dateAndTime: "YYYY-MM-DD HH:mm",
+  dayDateAndTime: "ddd, YYYY-MM-DD HH:mm",
 };
 
 export const isSameOrAfter = (d1: Dayjs, d2: Dayjs) => {

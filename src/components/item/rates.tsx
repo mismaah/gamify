@@ -1,11 +1,13 @@
 import React from "react";
-import { Table, Button, Popconfirm, message } from "antd";
+import { Table, Button, Popconfirm, message, Tooltip } from "antd";
 import { AddRate } from "../../components/item/add-rate";
 import { DATETIME_FORMATS } from "../../utils/helpers";
 import dayjs from "dayjs";
 import "dayjs/plugin/relativeTime";
 import { Item, Rate } from "@prisma/client";
 import { api } from "../../utils/api";
+import { DeleteOutlined } from "@ant-design/icons";
+import { useIsSmallDevice } from "../../utils/hooks";
 
 export interface RatesProps {
   item: Item & {
@@ -23,6 +25,12 @@ export const Rates: React.FC<RatesProps> = ({ item }) => {
       utils.item.get.invalidate({ id: item.id });
     },
   });
+
+  const isSmallDevice = useIsSmallDevice();
+  let actionColClasses = "flex gap-2";
+  if (isSmallDevice) {
+    actionColClasses += " flex-col";
+  }
 
   return (
     <div className="flex min-w-[300px] flex-col gap-2">
@@ -49,15 +57,20 @@ export const Rates: React.FC<RatesProps> = ({ item }) => {
             title: "",
             key: "actions",
             render: (_, rate) => (
-              <div className="flex gap-2">
+              <div className={actionColClasses}>
                 {item && <AddRate itemId={item.id} rate={rate} />}
                 <Popconfirm
                   title="Delete rate?"
                   onConfirm={() => deleteRate.mutate({ id: rate.id })}
                 >
-                  <Button size="small" danger>
-                    Delete
-                  </Button>
+                  <Tooltip title="Delete" placement="bottom">
+                    <Button
+                      size="small"
+                      danger
+                      type="link"
+                      icon={<DeleteOutlined />}
+                    />
+                  </Tooltip>
                 </Popconfirm>
               </div>
             ),

@@ -7,11 +7,13 @@ import {
   Form,
   Select,
   message,
+  Tooltip,
 } from "antd";
 import React, { useState } from "react";
 import { api } from "~/utils/api";
 import dayjs, { Dayjs } from "dayjs";
 import { DATETIME_FORMATS } from "../../utils/helpers";
+import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
 
 export interface AddRateProps {
   itemId: number;
@@ -20,7 +22,11 @@ export interface AddRateProps {
 
 export const AddRate: React.FC<AddRateProps> = ({ itemId, rate }) => {
   let title = "Add Rate";
-  if (rate) title = "Edit";
+  let icon = <PlusCircleOutlined />;
+  if (rate) {
+    title = "Edit";
+    icon = <EditOutlined />;
+  }
   const [visible, setVisible] = useState(false);
 
   const [form] = Form.useForm();
@@ -44,13 +50,14 @@ export const AddRate: React.FC<AddRateProps> = ({ itemId, rate }) => {
 
   return (
     <div>
-      <Button
-        onClick={() => setVisible(true)}
-        type={rate ? "default" : "primary"}
-        size={rate ? "small" : "middle"}
-      >
-        {title}
-      </Button>
+      <Tooltip title={title}>
+        <Button
+          onClick={() => setVisible(true)}
+          size={rate ? "small" : "middle"}
+          type="link"
+          icon={icon}
+        />
+      </Tooltip>
       <Modal
         open={visible}
         title={title}
