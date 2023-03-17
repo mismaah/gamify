@@ -59,13 +59,13 @@ const Home: NextPage = () => {
           <AddItem />
         </div>
         {items.isLoading && <Spin size="large" />}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:gap-8">
+        <div className="flex max-w-[700px] flex-wrap justify-around gap-4">
           {items.data &&
             accumulated.map((acc) => (
               <Link href={`/items/${acc.item.id}`} key={acc.item.id}>
                 <div
                   key={acc.item.id}
-                  className="flex max-w-xs cursor-pointer flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
+                  className="flex w-[200px] cursor-pointer flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
                 >
                   <h3 className="flex justify-between font-bold">
                     <div className="text-2xl">{acc.item.name}</div>
