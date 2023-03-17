@@ -49,6 +49,8 @@ export const countAccumulated = (rates?: Rate[]): [number, number | null] => {
   for (const rate of rates) {
     const ratePerSec = rate.value / rateInSec(rate.unit);
     const from = dayjs(rate.from);
+    // Skip rate if starting after current time
+    if (from.isAfter(dayjs())) continue;
     let to = dayjs();
     if (rate.to && dayjs(rate.to).isBefore(dayjs())) {
       to = dayjs(rate.to);
