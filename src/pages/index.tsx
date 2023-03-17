@@ -1,4 +1,5 @@
 import { Item, Rate, Use } from "@prisma/client";
+import { Spin } from "antd";
 import { type NextPage } from "next";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -37,8 +38,10 @@ const Home: NextPage = () => {
   };
 
   useEffect(() => {
-    updateNumbers();
-  }, []);
+    if (items?.data) {
+      updateNumbers();
+    }
+  }, [items?.data]);
 
   useEffect(() => {
     if (items) {
@@ -55,6 +58,7 @@ const Home: NextPage = () => {
         <div>
           <AddItem />
         </div>
+        {items.isLoading && <Spin size="large" />}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:gap-8">
           {items.data &&
             accumulated.map((acc) => (

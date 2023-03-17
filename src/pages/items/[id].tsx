@@ -42,7 +42,7 @@ const Item: NextPage<{ id: number }> = ({ id }) => {
     <>
       <Layout>
         <h3 className="text-2xl font-bold text-white">{getItem.data?.name}</h3>
-        {getItem.isLoading && <Spin></Spin>}
+        {getItem.isLoading && <Spin size="large" />}
         {getItem.data && (
           <>
             {
