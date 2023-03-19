@@ -101,7 +101,7 @@ export const AddRate: React.FC<AddRateProps> = ({ itemId, rate }) => {
               id: rate ? rate.id : null,
               itemId,
               from: from.startOf("day").toDate(),
-              to: to ? to.startOf("day").toDate() : null,
+              to: to ? to.endOf("day").toDate() : null,
               value,
               unit,
             });
