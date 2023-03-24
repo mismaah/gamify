@@ -18,7 +18,11 @@ const Item: NextPage<{ id: number }> = ({ id }) => {
   const [nextInSec, setNextInSec] = useState<number | null>(null);
 
   const updateNumbers = () => {
+    const startTime = performance.now();
     const [a, n] = countAccumulated(getItem?.data?.rates);
+    const endTime = performance.now();
+    const rounded = (Math.round((endTime - startTime) * 100) / 100).toFixed(2);
+    console.log(`Calc ${getItem?.data?.name}: ${rounded}ms`);
     setAccumulated(a);
     setNextInSec(n);
   };
