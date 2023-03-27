@@ -1,5 +1,5 @@
 import { Item, Rate, Use } from "@prisma/client";
-import { Spin } from "antd";
+import { message, Spin } from "antd";
 import { type NextPage } from "next";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -58,6 +58,17 @@ const Home: NextPage = () => {
     }
   });
 
+  const utils = api.useContext();
+  const mutation = api.usage.createOrUpdate.useMutation({
+    onSuccess: () => {
+      mutation.reset();
+      utils.item.getAll.invalidate();
+    },
+    onError: (error) => {
+      message.error(error.message);
+    },
+  });
+
   return (
     <>
       <Layout>
@@ -72,6 +83,14 @@ const Home: NextPage = () => {
                 <div
                   key={acc.item.id}
                   className="flex w-[200px] cursor-pointer flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    mutation.mutate({
+                      id: null,
+                      itemId: acc.item.id,
+                      createdAt: null,
+                    });
+                  }}
                 >
                   <h3 className="flex justify-between font-bold">
                     <div className="text-2xl">{acc.item.name}</div>
