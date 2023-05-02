@@ -1,13 +1,13 @@
-import { NextPage } from "next";
-import React, { useEffect, useState } from "react";
-import { Layout } from "../../components/common/layout";
-import { api } from "../../utils/api";
 import { Spin, Statistic } from "antd";
-import { countAccumulated, timeDuration } from "../../utils/helpers";
 import dayjs from "dayjs";
 import "dayjs/plugin/relativeTime";
+import { NextPage } from "next";
+import { useEffect, useState } from "react";
+import { Layout } from "../../components/common/layout";
 import { Rates } from "../../components/item/rates";
 import { Usage } from "../../components/item/usage";
+import { api } from "../../utils/api";
+import { countAccumulated, timeDuration } from "../../utils/helpers";
 
 dayjs.extend(require("dayjs/plugin/relativeTime"));
 
@@ -18,11 +18,7 @@ const Item: NextPage<{ id: number }> = ({ id }) => {
   const [nextInSec, setNextInSec] = useState<number | null>(null);
 
   const updateNumbers = () => {
-    const startTime = performance.now();
     const [a, n] = countAccumulated(getItem?.data?.rates);
-    const endTime = performance.now();
-    const rounded = (Math.round((endTime - startTime) * 100) / 100).toFixed(2);
-    console.log(`Calc ${getItem?.data?.name}: ${rounded}ms`);
     setAccumulated(a);
     setNextInSec(n);
   };

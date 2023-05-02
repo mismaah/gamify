@@ -1,5 +1,5 @@
 import { Item, Rate, Use } from "@prisma/client";
-import { message, Spin } from "antd";
+import { Spin, message } from "antd";
 import { type NextPage } from "next";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -26,13 +26,7 @@ const Home: NextPage = () => {
     if (items.data) {
       const numbers = [];
       for (const item of items.data) {
-        const startTime = performance.now();
         const [accumulated, nextInSec] = countAccumulated(item.rates);
-        const endTime = performance.now();
-        const rounded = (Math.round((endTime - startTime) * 100) / 100).toFixed(
-          2
-        );
-        console.log(`Calc ${item.name}: ${rounded}ms`);
         numbers.push({
           accumulated,
           nextInSec,
