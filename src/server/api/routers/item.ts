@@ -18,7 +18,7 @@ export const itemRouter = createTRPCRouter({
     return ctx.prisma.item.findMany({
       include: {
         rates: true,
-        usage: true,
+        usage: { orderBy: { id: "desc" } },
       },
     });
   }),

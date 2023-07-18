@@ -7,7 +7,11 @@ import { Layout } from "../../components/common/layout";
 import { Rates } from "../../components/item/rates";
 import { Usage } from "../../components/item/usage";
 import { api } from "../../utils/api";
-import { countAccumulated, timeDuration } from "../../utils/helpers";
+import {
+  DATETIME_FORMATS,
+  countAccumulated,
+  timeDuration,
+} from "../../utils/helpers";
 
 dayjs.extend(require("dayjs/plugin/relativeTime"));
 
@@ -58,6 +62,12 @@ const Item: NextPage<{ id: number }> = ({ id }) => {
                     formatter={(value) => timeDuration(value as number)}
                   />
                 )}
+                <Statistic
+                  title={`Total since ${dayjs(
+                    getItem.data.usage[getItem.data.usage.length - 1]?.createdAt
+                  ).format(DATETIME_FORMATS.date)}`}
+                  value={getItem.data.usage.length}
+                />
               </div>
             }
             <Usage item={getItem.data} />
