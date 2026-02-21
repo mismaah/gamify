@@ -31,9 +31,7 @@ COPY . .
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.
-# ENV NEXT_TELEMETRY_DISABLED 1
-
-# RUN yarn build
+# ENV NEXT_TELEMETRY_DISABLED=1
 
 # If using npm comment out above and use below instead
 ENV SKIP_ENV_VALIDATION=1
@@ -43,9 +41,9 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
+ENV NODE_ENV=production
 # Uncomment the following line in case you want to disable telemetry during runtime.
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
@@ -57,18 +55,19 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-USER nextjs
-
-EXPOSE 3000
-
-ENV PORT 3000
-
-# CMD ["node", "server.js"]
-
+# Prisma: copy schema, migrations, generated client, config, and CLI
 COPY --from=builder /app/prisma/schema.prisma ./prisma/schema.prisma
 COPY --from=builder /app/prisma/migrations ./prisma/migrations/
 COPY --from=builder /app/prisma/generated ./prisma/generated/
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
+COPY --from=builder /app/node_modules/prisma ./node_modules/prisma/
+COPY --from=builder /app/node_modules/@prisma/engines ./node_modules/@prisma/engines/
 COPY startup.sh ./
 
-ENTRYPOINT  ["sh", "/app/startup.sh"]
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT=3000
+
+ENTRYPOINT ["sh", "/app/startup.sh"]
