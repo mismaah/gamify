@@ -113,6 +113,8 @@ const config = {
   },
   // Prisma v7 with adapter-pg must not be bundled by webpack.
   // Keep these as runtime node_modules so the adapter (not the engine binary) is used.
-  serverExternalPackages: ["@prisma/adapter-pg", "@prisma/client"],
+  experimental: {
+    serverComponentsExternalPackages: ["@prisma/adapter-pg", "@prisma/client"],
+  },
 };
 export default config;

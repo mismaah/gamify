@@ -27,6 +27,8 @@ ARG DATABASE_URL
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# Ensure the generated Prisma client from deps stage is present (COPY . . may not include it)
+COPY --from=deps /app/prisma/generated ./prisma/generated/
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
