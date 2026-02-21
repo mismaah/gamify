@@ -1,7 +1,7 @@
-import type { PrismaClient } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import type { AppPrismaClient } from "~/server/db";
 
 export const rateRouter = createTRPCRouter({
   getAll: publicProcedure
@@ -60,7 +60,7 @@ export const rateRouter = createTRPCRouter({
 
 export const checkRateOverlap = async (
   dontCountIds: number[],
-  prisma: PrismaClient,
+  prisma: AppPrismaClient,
   itemId: number,
   from: Date,
   to: Date | null

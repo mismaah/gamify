@@ -1,4 +1,4 @@
-import type { Rate } from "@prisma/client";
+import type { Rate } from "@prisma/generated";
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 

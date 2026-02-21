@@ -1,4 +1,4 @@
-FROM node:18-alpine AS base
+FROM node:22-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -8,7 +8,8 @@ WORKDIR /app
 
 # Install Prisma Client - remove if not using Prisma
 
-COPY prisma ./
+COPY prisma ./prisma/
+COPY prisma.config.ts ./
 
 # Install dependencies based on the preferred package manager
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
@@ -64,7 +65,9 @@ ENV PORT 3000
 
 # CMD ["node", "server.js"]
 
-COPY prisma ./
+COPY prisma ./prisma/
+COPY prisma.config.ts ./
+COPY --from=builder /app/prisma/generated ./prisma/generated/
 COPY startup.sh ./
 
 ENTRYPOINT  ["sh", "/app/startup.sh"]

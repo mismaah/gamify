@@ -1,5 +1,5 @@
 import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
-import { Use } from "@prisma/client";
+import type { Use } from "@prisma/generated";
 import { Button, DatePicker, Form, message, Modal, Tooltip } from "antd";
 import dayjs, { Dayjs } from "dayjs";
 import React, { useState } from "react";

@@ -1,19 +1,19 @@
-import { Rate } from "@prisma/client";
+import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import type { Rate } from "@prisma/generated";
 import {
-  Modal,
   Button,
-  InputNumber,
   DatePicker,
   Form,
-  Select,
+  InputNumber,
   message,
+  Modal,
+  Select,
   Tooltip,
 } from "antd";
+import dayjs, { Dayjs } from "dayjs";
 import React, { useState } from "react";
 import { api } from "~/utils/api";
-import dayjs, { Dayjs } from "dayjs";
 import { DATETIME_FORMATS } from "../../utils/helpers";
-import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
 
 export interface AddRateProps {
   itemId: number;

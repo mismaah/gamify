@@ -1,12 +1,12 @@
-import React from "react";
-import { Table, Button, Popconfirm, message, Tooltip } from "antd";
-import { AddRate } from "../../components/item/add-rate";
-import { DATETIME_FORMATS } from "../../utils/helpers";
+import { DeleteOutlined } from "@ant-design/icons";
+import type { Item, Rate } from "@prisma/generated";
+import { Button, message, Popconfirm, Table, Tooltip } from "antd";
 import dayjs from "dayjs";
 import "dayjs/plugin/relativeTime";
-import { Item, Rate } from "@prisma/client";
+import React from "react";
+import { AddRate } from "../../components/item/add-rate";
 import { api } from "../../utils/api";
-import { DeleteOutlined } from "@ant-design/icons";
+import { DATETIME_FORMATS } from "../../utils/helpers";
 import { useIsSmallDevice } from "../../utils/hooks";
 
 export interface RatesProps {
