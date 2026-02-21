@@ -28,5 +28,17 @@ const config = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
+  // Prisma v7 with adapter-pg must not be bundled by webpack —
+  // keep these as runtime node_modules requires so the adapter (not the engine binary) is used.
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals = [
+        ...(Array.isArray(config.externals) ? config.externals : []),
+        "@prisma/adapter-pg",
+        /^@prisma\/client(\/.*)?$/,
+      ];
+    }
+    return config;
+  },
 };
 export default config;

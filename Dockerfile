@@ -65,9 +65,10 @@ ENV PORT 3000
 
 # CMD ["node", "server.js"]
 
-COPY prisma ./prisma/
-COPY prisma.config.ts ./
+COPY --from=builder /app/prisma/schema.prisma ./prisma/schema.prisma
+COPY --from=builder /app/prisma/migrations ./prisma/migrations/
 COPY --from=builder /app/prisma/generated ./prisma/generated/
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY startup.sh ./
 
 ENTRYPOINT  ["sh", "/app/startup.sh"]
