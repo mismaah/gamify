@@ -57,13 +57,13 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Prisma: copy schema, migrations, generated client, config, and CLI
+# Prisma: copy schema, migrations, generated client, config, and CLI (with all @prisma/* deps)
 COPY --from=builder /app/prisma/schema.prisma ./prisma/schema.prisma
 COPY --from=builder /app/prisma/migrations ./prisma/migrations/
 COPY --from=builder /app/prisma/generated ./prisma/generated/
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma/
-COPY --from=builder /app/node_modules/@prisma/engines ./node_modules/@prisma/engines/
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma/
 COPY startup.sh ./
 
 USER nextjs
