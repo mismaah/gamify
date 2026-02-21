@@ -1,6 +1,6 @@
 import type { Rate } from "@prisma/client";
-import dayjs from "dayjs";
 import type { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 
 export const DATETIME_FORMATS = {
   date: "YYYY-MM-DD",
@@ -43,10 +43,12 @@ export const rateInSec = (unit: string) => {
   return val;
 };
 
-export const countAccumulated = (rates?: Rate[]): [number, number | null] => {
-  if (!rates) return [0, null];
+export const countAccumulated = (
+  rates?: Rate[]
+): [number, number | null, number | null] => {
+  if (!rates) return [0, null, null];
   let total = 0;
-  let currentRate = null;
+  let currentRate: number | null = null;
   for (const rate of rates) {
     const ratePerSec = rate.value / rateInSec(rate.unit);
     const from = dayjs(rate.from);
@@ -67,11 +69,11 @@ export const countAccumulated = (rates?: Rate[]): [number, number | null] => {
   }
   const floored = Math.floor(total);
   const remainder = 1 - (total - floored);
-  let nextInSecs = null;
+  let nextInSecs: number | null = null;
   if (currentRate) {
     nextInSecs = remainder / currentRate;
   }
-  return [floored, nextInSecs];
+  return [floored, nextInSecs, currentRate];
 };
 
 export const plural = (val: number, unit: string) => {

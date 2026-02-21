@@ -1,4 +1,3 @@
-import { Item, Rate, Use } from "@prisma/client";
 import { Spin, message } from "antd";
 import { type NextPage } from "next";
 import Link from "next/link";
@@ -6,51 +5,50 @@ import { useEffect, useState } from "react";
 import { api } from "~/utils/api";
 import { Layout } from "../components/common/layout";
 import { AddItem } from "../components/item/add-item";
-import { countAccumulated, timeDuration } from "../utils/helpers";
+import { timeDuration } from "../utils/helpers";
+
+interface DisplayItem {
+  id: number;
+  name: string;
+  description: string;
+  accumulated: number;
+  nextInSec: number | null;
+  currentRatePerSec: number | null;
+  usageCount: number;
+}
 
 const Home: NextPage = () => {
-  const items = api.item.getAll.useQuery();
+  const [page, setPage] = useState(1);
+  const pageSize = 12;
+  const itemsQuery = api.item.getAll.useQuery({ page, pageSize });
 
-  const [accumulated, setAccumulated] = useState<
-    {
-      accumulated: number;
-      nextInSec: number | null;
-      item: Item & {
-        rates: Rate[];
-        usage: Use[];
-      };
-    }[]
-  >([]);
+  const [displayItems, setDisplayItems] = useState<DisplayItem[]>([]);
 
-  const updateNumbers = () => {
-    if (items.data) {
-      const numbers = [];
-      for (const item of items.data) {
-        const [accumulated, nextInSec] = countAccumulated(item.rates);
-        numbers.push({
-          accumulated,
-          nextInSec,
-          item,
-        });
-      }
-      setAccumulated(numbers);
-    }
-  };
-
+  // Sync from server
   useEffect(() => {
-    if (items?.data) {
-      updateNumbers();
+    if (itemsQuery.data) {
+      setDisplayItems(itemsQuery.data.items);
     }
-  }, [items?.data]);
+  }, [itemsQuery.data]);
 
+  // Countdown timer
   useEffect(() => {
-    if (items) {
-      var handle = setInterval(updateNumbers, 1000);
-      return () => {
-        clearInterval(handle);
-      };
-    }
-  });
+    const handle = setInterval(() => {
+      setDisplayItems((prev) =>
+        prev.map((item) => {
+          if (!item.currentRatePerSec || item.nextInSec === null) return item;
+          let nextInSec = item.nextInSec - 1;
+          let accumulated = item.accumulated;
+          if (nextInSec <= 0) {
+            accumulated += 1;
+            nextInSec = 1 / item.currentRatePerSec;
+          }
+          return { ...item, accumulated, nextInSec };
+        })
+      );
+    }, 1000);
+    return () => clearInterval(handle);
+  }, []);
 
   const utils = api.useContext();
   const mutation = api.usage.createOrUpdate.useMutation({
@@ -63,49 +61,70 @@ const Home: NextPage = () => {
     },
   });
 
+  const totalPages = itemsQuery.data
+    ? Math.ceil(itemsQuery.data.total / pageSize)
+    : 0;
+
   return (
     <>
       <Layout>
         <div>
           <AddItem />
         </div>
-        {items.isLoading && <Spin size="large" />}
+        {itemsQuery.isLoading && <Spin size="large" />}
         <div className="flex max-w-[700px] flex-wrap justify-around gap-4">
-          {items.data &&
-            accumulated.map((acc) => (
-              <Link href={`/items/${acc.item.id}`} key={acc.item.id}>
-                <div
-                  key={acc.item.id}
-                  className="flex w-[200px] cursor-pointer flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-                  onContextMenu={(e) => {
-                    e.preventDefault();
-                    mutation.mutate({
-                      id: null,
-                      itemId: acc.item.id,
-                      createdAt: null,
-                    });
-                  }}
-                >
-                  <h3 className="flex justify-between font-bold">
-                    <div className="text-2xl">{acc.item.name}</div>
-                    <div className="text-xl">
-                      {acc.accumulated - acc.item.usage.length}
-                    </div>
-                  </h3>
-                  {acc.nextInSec && (
-                    <div className="opacity-50">
-                      Next in {timeDuration(acc.nextInSec as number)}
-                    </div>
-                  )}
-                  {acc.item.description && (
-                    <div className="text-lg opacity-80">
-                      {acc.item.description}
-                    </div>
-                  )}
-                </div>
-              </Link>
-            ))}
+          {displayItems.map((item) => (
+            <Link href={`/items/${item.id}`} key={item.id}>
+              <div
+                className="flex w-[200px] cursor-pointer flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  mutation.mutate({
+                    id: null,
+                    itemId: item.id,
+                    createdAt: null,
+                  });
+                }}
+              >
+                <h3 className="flex justify-between font-bold">
+                  <div className="text-2xl">{item.name}</div>
+                  <div className="text-xl">
+                    {item.accumulated - item.usageCount}
+                  </div>
+                </h3>
+                {item.nextInSec && (
+                  <div className="opacity-50">
+                    Next in {timeDuration(item.nextInSec)}
+                  </div>
+                )}
+                {item.description && (
+                  <div className="text-lg opacity-80">{item.description}</div>
+                )}
+              </div>
+            </Link>
+          ))}
         </div>
+        {totalPages > 1 && (
+          <div className="mt-4 flex gap-2">
+            <button
+              className="rounded bg-white/10 px-3 py-1 text-white hover:bg-white/20 disabled:opacity-30"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              Previous
+            </button>
+            <span className="py-1 text-white">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              className="rounded bg-white/10 px-3 py-1 text-white hover:bg-white/20 disabled:opacity-30"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </Layout>
     </>
   );

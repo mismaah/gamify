@@ -39,6 +39,8 @@ model Rate {
     to        DateTime?
     value     Float
     unit      String
+
+    @@index([itemId, from, to])
 }
 
 model Use {
@@ -46,4 +48,6 @@ model Use {
     createdAt DateTime @default(now())
     itemId    Int
     item      Item     @relation(fields: [itemId], references: [id])
+
+    @@index([itemId, createdAt])
 }

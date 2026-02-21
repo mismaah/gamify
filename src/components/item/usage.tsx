@@ -1,28 +1,30 @@
-import React from "react";
-import { Table, Button, Popconfirm, message, Tooltip } from "antd";
-import { DATETIME_FORMATS } from "../../utils/helpers";
+import { DeleteOutlined } from "@ant-design/icons";
+import { Button, message, Popconfirm, Table, Tooltip } from "antd";
 import dayjs from "dayjs";
 import "dayjs/plugin/relativeTime";
-import { Item, Use } from "@prisma/client";
+import React, { useState } from "react";
 import { api } from "../../utils/api";
-import { AddUse } from "./add-use";
-import { DeleteOutlined } from "@ant-design/icons";
+import { DATETIME_FORMATS } from "../../utils/helpers";
 import { useIsSmallDevice } from "../../utils/hooks";
+import { AddUse } from "./add-use";
 
 export interface UsageProps {
-  item: Item & {
-    usage: Use[];
-  };
+  itemId: number;
 }
 
-export const Usage: React.FC<UsageProps> = ({ item }) => {
+export const Usage: React.FC<UsageProps> = ({ itemId }) => {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const usageQuery = api.usage.getAll.useQuery({ itemId, page, pageSize });
+
   const utils = api.useContext();
-  const deleteRate = api.usage.delete.useMutation({
+  const deleteUse = api.usage.delete.useMutation({
     onError: (err) => {
       message.error(err.message);
     },
     onSuccess: () => {
-      utils.item.get.invalidate({ id: item.id });
+      utils.item.get.invalidate({ id: itemId });
+      utils.usage.getAll.invalidate();
     },
   });
 
@@ -34,9 +36,10 @@ export const Usage: React.FC<UsageProps> = ({ item }) => {
 
   return (
     <div className="flex min-w-[300px] flex-col gap-2">
-      {item && <AddUse itemId={item.id} />}
+      <AddUse itemId={itemId} />
       <Table
         rowKey="id"
+        loading={usageQuery.isLoading}
         columns={[
           {
             title: "Created at",
@@ -50,10 +53,10 @@ export const Usage: React.FC<UsageProps> = ({ item }) => {
             key: "actions",
             render: (_, use) => (
               <div className={actionColClasses}>
-                {item && <AddUse itemId={item.id} use={use} />}
+                <AddUse itemId={itemId} use={use} />
                 <Popconfirm
                   title="Delete use?"
-                  onConfirm={() => deleteRate.mutate({ id: use.id })}
+                  onConfirm={() => deleteUse.mutate({ id: use.id })}
                 >
                   <Tooltip title="Delete" placement="bottom">
                     <Button
@@ -68,7 +71,18 @@ export const Usage: React.FC<UsageProps> = ({ item }) => {
             ),
           },
         ]}
-        dataSource={item.usage}
+        dataSource={usageQuery.data?.data}
+        pagination={{
+          current: page,
+          pageSize,
+          total: usageQuery.data?.total,
+          onChange: (p, ps) => {
+            setPage(p);
+            if (ps !== pageSize) setPageSize(ps);
+          },
+          showSizeChanger: true,
+          showTotal: (total) => `Total ${total} records`,
+        }}
       />
     </div>
   );

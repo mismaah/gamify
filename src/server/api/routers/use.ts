@@ -3,9 +3,25 @@ import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 export const usageRouter = createTRPCRouter({
   getAll: publicProcedure
-    .input(z.object({ itemId: z.number() }))
-    .query(({ ctx, input }) => {
-      return ctx.prisma.use.findMany({ where: { itemId: input.itemId } });
+    .input(
+      z.object({
+        itemId: z.number(),
+        page: z.number().min(1).default(1),
+        pageSize: z.number().min(1).max(100).default(10),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { itemId, page, pageSize } = input;
+      const [data, total] = await Promise.all([
+        ctx.prisma.use.findMany({
+          where: { itemId },
+          orderBy: { createdAt: "desc" },
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+        }),
+        ctx.prisma.use.count({ where: { itemId } }),
+      ]);
+      return { data, total, page, pageSize };
     }),
 
   createOrUpdate: publicProcedure

@@ -1,10 +1,10 @@
+import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { Use } from "@prisma/client";
-import { Modal, Button, DatePicker, Form, message, Tooltip } from "antd";
+import { Button, DatePicker, Form, message, Modal, Tooltip } from "antd";
+import dayjs, { Dayjs } from "dayjs";
 import React, { useState } from "react";
 import { api } from "~/utils/api";
-import dayjs, { Dayjs } from "dayjs";
 import { DATETIME_FORMATS } from "../../utils/helpers";
-import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
 
 export interface AddUseProps {
   itemId: number;
@@ -33,6 +33,7 @@ export const AddUse: React.FC<AddUseProps> = ({ itemId, use }) => {
       handleCancel();
       mutation.reset();
       utils.item.get.invalidate({ id: itemId });
+      utils.usage.getAll.invalidate();
     },
     onError: (error) => {
       message.error(error.message);
