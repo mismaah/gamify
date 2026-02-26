@@ -2,39 +2,52 @@ import dayjs from "dayjs";
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { cache } from "~/server/cache";
 import { countAccumulated, rateInSec } from "~/utils/helpers";
 
 export const itemRouter = createTRPCRouter({
   get: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
-      const item = await ctx.prisma.item.findFirst({
-        where: { id: input.id },
-        include: {
-          rates: { orderBy: { from: "desc" } },
-          _count: { select: { usage: true } },
-        },
-      });
-      if (!item) return null;
+      const cacheKey = `item.get:${input.id}`;
 
-      const firstUsage = await ctx.prisma.use.findFirst({
-        where: { itemId: input.id },
-        orderBy: { createdAt: "asc" },
-        select: { createdAt: true },
-      });
+      const fetchItem = async () => {
+        const item = await ctx.prisma.item.findFirst({
+          where: { id: input.id },
+          include: {
+            rates: { orderBy: { from: "desc" } },
+            _count: { select: { usage: true } },
+          },
+        });
+        if (!item) return null;
 
-      const [accumulated, nextInSec, currentRatePerSec] = countAccumulated(
-        item.rates
-      );
-      const { _count, ...rest } = item;
-      return {
-        ...rest,
-        accumulated,
-        nextInSec,
-        currentRatePerSec,
-        usageCount: _count.usage,
-        firstUsageDate: firstUsage?.createdAt ?? null,
+        const firstUsage = await ctx.prisma.use.findFirst({
+          where: { itemId: input.id },
+          orderBy: { createdAt: "asc" },
+          select: { createdAt: true },
+        });
+
+        const [accumulated, nextInSec, currentRatePerSec] = countAccumulated(
+          item.rates
+        );
+        const { _count, ...rest } = item;
+        return {
+          ...rest,
+          accumulated,
+          nextInSec,
+          currentRatePerSec,
+          usageCount: _count.usage,
+          firstUsageDate: firstUsage?.createdAt ?? null,
+        };
       };
+
+      type ItemGetResult = Awaited<ReturnType<typeof fetchItem>>;
+      const cached = cache.get<ItemGetResult>(cacheKey);
+      if (cached !== undefined) return cached;
+
+      const result = await fetchItem();
+      if (result) cache.set(cacheKey, result);
+      return result;
     }),
 
   getAll: publicProcedure

@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { cache } from "~/server/cache";
 import type { AppPrismaClient } from "~/server/db";
 
 export const rateRouter = createTRPCRouter({
@@ -30,7 +31,7 @@ export const rateRouter = createTRPCRouter({
         input.to
       );
       if (input.id) {
-        return ctx.prisma.rate.update({
+        const updated = await ctx.prisma.rate.update({
           where: { id: input.id },
           data: {
             from: input.from,
@@ -39,8 +40,10 @@ export const rateRouter = createTRPCRouter({
             unit: input.unit,
           },
         });
+        cache.invalidate(`item.get:${input.itemId}`);
+        return updated;
       }
-      return ctx.prisma.rate.create({
+      const created = await ctx.prisma.rate.create({
         data: {
           itemId: input.itemId,
           from: input.from,
@@ -49,12 +52,16 @@ export const rateRouter = createTRPCRouter({
           unit: input.unit,
         },
       });
+      cache.invalidate(`item.get:${input.itemId}`);
+      return created;
     }),
 
   delete: publicProcedure
     .input(z.object({ id: z.number() }))
-    .mutation(({ ctx, input }) => {
-      return ctx.prisma.rate.delete({ where: { id: input.id } });
+    .mutation(async ({ ctx, input }) => {
+      const result = await ctx.prisma.rate.delete({ where: { id: input.id } });
+      cache.invalidate(`item.get:${result.itemId}`);
+      return result;
     }),
 });
 

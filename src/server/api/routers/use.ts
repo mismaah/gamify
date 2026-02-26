@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { cache } from "~/server/cache";
 
 export const usageRouter = createTRPCRouter({
   getAll: publicProcedure
@@ -12,6 +13,20 @@ export const usageRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const { itemId, page, pageSize } = input;
+
+      // Cache only the default first-page request
+      const cacheKey = `usage.getAll:${itemId}:${page}:${pageSize}`;
+      if (page === 1 && pageSize === 10) {
+        const cached = cache.get(cacheKey);
+        if (cached)
+          return cached as {
+            data: any[];
+            total: number;
+            page: number;
+            pageSize: number;
+          };
+      }
+
       const [data, total] = await Promise.all([
         ctx.prisma.use.findMany({
           where: { itemId },
@@ -21,7 +36,11 @@ export const usageRouter = createTRPCRouter({
         }),
         ctx.prisma.use.count({ where: { itemId } }),
       ]);
-      return { data, total, page, pageSize };
+      const result = { data, total, page, pageSize };
+      if (page === 1 && pageSize === 10) {
+        cache.set(cacheKey, result);
+      }
+      return result;
     }),
 
   createOrUpdate: publicProcedure
@@ -34,24 +53,33 @@ export const usageRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       if (input.id && input.createdAt) {
-        return ctx.prisma.use.update({
+        const result = await ctx.prisma.use.update({
           where: { id: input.id },
           data: {
             createdAt: input.createdAt,
           },
         });
+        cache.invalidate(`item.get:${result.itemId}`);
+        cache.invalidatePrefix(`usage.getAll:${result.itemId}:`);
+        return result;
       } else if (input.itemId) {
-        return ctx.prisma.use.create({
+        const result = await ctx.prisma.use.create({
           data: {
             itemId: input.itemId,
           },
         });
+        cache.invalidate(`item.get:${input.itemId}`);
+        cache.invalidatePrefix(`usage.getAll:${input.itemId}:`);
+        return result;
       }
     }),
 
   delete: publicProcedure
     .input(z.object({ id: z.number() }))
-    .mutation(({ ctx, input }) => {
-      return ctx.prisma.use.delete({ where: { id: input.id } });
+    .mutation(async ({ ctx, input }) => {
+      const result = await ctx.prisma.use.delete({ where: { id: input.id } });
+      cache.invalidate(`item.get:${result.itemId}`);
+      cache.invalidatePrefix(`usage.getAll:${result.itemId}:`);
+      return result;
     }),
 });

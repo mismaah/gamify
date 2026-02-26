@@ -1,14 +1,20 @@
-import { Spin, Statistic } from "antd";
+import { Button, Spin, Statistic } from "antd";
 import dayjs from "dayjs";
 import "dayjs/plugin/relativeTime";
 import { NextPage } from "next";
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { Layout } from "../../components/common/layout";
-import { ItemAnalytics } from "../../components/item/item-analytics";
 import { Rates } from "../../components/item/rates";
 import { Usage } from "../../components/item/usage";
 import { api } from "../../utils/api";
 import { DATETIME_FORMATS, timeDuration } from "../../utils/helpers";
+
+const ItemAnalytics = dynamic(
+  () =>
+    import("../../components/item/item-analytics").then((m) => m.ItemAnalytics),
+  { ssr: false, loading: () => <Spin size="large" /> }
+);
 
 dayjs.extend(require("dayjs/plugin/relativeTime"));
 
@@ -17,6 +23,7 @@ const Item: NextPage<{ id: number }> = ({ id }) => {
 
   const [accumulated, setAccumulated] = useState(0);
   const [nextInSec, setNextInSec] = useState<number | null>(null);
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   // Sync from server
   useEffect(() => {
@@ -74,7 +81,13 @@ const Item: NextPage<{ id: number }> = ({ id }) => {
             }
             <Usage itemId={getItem.data.id} />
             <Rates item={getItem.data} />
-            <ItemAnalytics itemId={getItem.data.id} />
+            {showAnalytics ? (
+              <ItemAnalytics itemId={getItem.data.id} />
+            ) : (
+              <Button type="primary" onClick={() => setShowAnalytics(true)}>
+                Show Analytics
+              </Button>
+            )}
           </>
         )}
       </Layout>
